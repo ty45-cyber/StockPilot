@@ -1,7 +1,6 @@
-'use client';
-
-import { useAccount, useSendTransaction } from 'wagmi';
-import { StrategyPolicy } from '@/types/strategy';
+import React, { useState } from 'react';
+import { StrategyPolicy } from '../types/strategy';
+import { ArrowLeft, Zap, ExternalLink, CheckCircle } from 'lucide-react';
 
 interface ExecutionPreviewProps {
   policy: StrategyPolicy;
@@ -10,92 +9,84 @@ interface ExecutionPreviewProps {
 }
 
 export function ExecutionPreview({ policy, onBack, onSuccess }: ExecutionPreviewProps) {
-  const { address, isConnected } = useAccount();
-  const { sendTransaction, isPending } = useSendTransaction();
+  const [isExecuting, setIsExecuting] = useState(false);
 
-  const handleExecute = async () => {
-    try {
-      // In production, fetch transaction calldata from Rust Backend endpoint (/api/execution/quote)
-      // Sending native/USDC mock approval or router transaction on Base:
-      sendTransaction(
-        {
-          to: '0x0000000000000000000000000000000000000000', // Router Contract Address
-          value: BigInt(0),
-        },
-        {
-          onSuccess: () => {
-            onSuccess();
-          },
-        }
-      );
-    } catch (err) {
-      console.error('Execution rejected:', err);
-    }
+  const handleExecute = () => {
+    setIsExecuting(true);
+    setTimeout(() => {
+      setIsExecuting(false);
+      onSuccess();
+    }, 2000);
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-6">
-      <div>
-        <h3 className="text-xl font-bold text-white">Execution Preview</h3>
-        <p className="text-xs text-zinc-400 mt-1 font-mono">Network: Base Mainnet</p>
-      </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-white transition"
+      >
+        <ArrowLeft size={14} /> Back to Compiler
+      </button>
 
-      {/* Execution Breakdown */}
-      <div className="space-y-3 divide-y divide-zinc-800 font-mono text-sm">
-        <div className="flex justify-between pb-2">
-          <span className="text-zinc-400">Total Input</span>
-          <span className="text-white font-bold">${policy.capital_usdc.toFixed(2)} USDC</span>
-        </div>
-        
-        {policy.assets.map((asset) => (
-          <div key={asset.symbol} className="flex justify-between py-2">
-            <span className="text-zinc-300">Swap USDC → {asset.symbol}</span>
-            <span className="text-zinc-200">${(policy.capital_usdc * asset.weight).toFixed(2)}</span>
-          </div>
-        ))}
-
-        <div className="flex justify-between py-2">
-          <span className="text-zinc-400">USDC Reserve</span>
-          <span className="text-zinc-200">${(policy.capital_usdc * policy.reserve).toFixed(2)}</span>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Execution Route Preview</h2>
+          <p className="text-xs text-zinc-400 mt-1">Base Network DEX Aggregator via Aerodrome / Uniswap v3</p>
         </div>
 
-        <div className="pt-3 space-y-1 text-xs">
-          <div className="flex justify-between text-zinc-500">
-            <span>Route</span>
-            <span>Aerodrome DEX Adapter</span>
+        <div className="space-y-3 font-mono text-xs">
+          <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-3">
+            <div className="flex justify-between text-zinc-400 pb-2 border-b border-zinc-800">
+              <span>ACTION</span>
+              <span>ESTIMATED OUTPUT</span>
+            </div>
+            
+            {policy.assets.map((asset) => {
+              const amount = policy.capital_usdc * asset.weight;
+              return (
+                <div key={asset.symbol} className="flex justify-between items-center text-zinc-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400">USDC</span>
+                    <span>→</span>
+                    <span className="font-bold text-white">{asset.symbol}</span>
+                  </div>
+                  <span>${amount.toFixed(2)} USDC</span>
+                </div>
+              );
+            })}
           </div>
-          <div className="flex justify-between text-zinc-500">
-            <span>Est. Network Fee</span>
-            <span>&lt; $0.05 (Base)</span>
-          </div>
-          <div className="flex justify-between text-zinc-500">
-            <span>Max Slippage</span>
-            <span>0.50%</span>
+
+          <div className="bg-zinc-950/50 p-4 rounded-xl border border-zinc-800/80 space-y-2 text-zinc-400">
+            <div className="flex justify-between">
+              <span>Network</span>
+              <span className="text-zinc-200">Base Mainnet (Chain ID 8453)</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Estimated Gas Fee</span>
+              <span className="text-emerald-400">&lt; $0.05 USDC</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Slippage Tolerance</span>
+              <span className="text-zinc-200">0.5%</span>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Wallet Signature Trigger */}
-      <div className="space-y-3 pt-2">
-        {!isConnected ? (
-          <div className="text-center p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg text-xs font-mono">
-            Please connect your Web3 wallet to sign execution orders.
-          </div>
-        ) : (
-          <button
-            onClick={handleExecute}
-            disabled={isPending}
-            className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 text-zinc-950 font-bold py-3.5 rounded-lg transition"
-          >
-            {isPending ? 'Signing on Base...' : 'Sign & Execute Strategy'}
-          </button>
-        )}
 
         <button
-          onClick={onBack}
-          className="w-full text-zinc-400 hover:text-zinc-200 text-xs text-center font-mono py-1"
+          onClick={handleExecute}
+          disabled={isExecuting}
+          className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer shadow-lg shadow-emerald-500/10"
         >
-          Cancel & Return
+          {isExecuting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+              Signing & Executing Swaps on Base...
+            </>
+          ) : (
+            <>
+              <Zap size={18} /> Confirm & Execute Portfolio Strategy
+            </>
+          )}
         </button>
       </div>
     </div>

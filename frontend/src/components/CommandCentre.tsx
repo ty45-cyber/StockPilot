@@ -1,67 +1,79 @@
-'use client';
-
-import { useState } from 'react';
-
-const EXAMPLE_PROMPTS = [
-  'Build me a $500 AI infrastructure portfolio. Max 20% per stock, 10% USDC.',
-  'Allocate $1,000 across mega-cap tech, keep 15% in reserve.',
-  'Build a $250 semiconductor strategy with weekly rebalancing.',
-];
+import React, { useState } from 'react';
+import { Sparkles, Terminal, ArrowRight } from 'lucide-react';
 
 interface CommandCenterProps {
   onCompile: (prompt: string) => void;
   isLoading: boolean;
 }
 
-export function CommandCenter({ onCompile, isLoading }: CommandCenterProps) {
-  const [prompt, setPrompt] = useState('');
+const SAMPLE_PROMPTS = [
+  "Build me a $500 AI infrastructure portfolio. Max 20% per stock, 10% USDC reserve.",
+  "Invest $1,000 across Big Tech equities on Base with a 14-day auto-rebalance.",
+  "Create a $250 basket split between NVDAc and MSFTc with a buy-the-dip rule at -5%."
+];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (prompt.trim()) onCompile(prompt);
-  };
+export function CommandCenter({ onCompile, isLoading }: CommandCenterProps) {
+  const [prompt, setPrompt] = useState(SAMPLE_PROMPTS[0]);
 
   return (
-    <div className="max-w-3xl mx-auto text-center space-y-6 pt-12">
-      <div className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-        PROGRAMMABLE EQUITIES ON BASE
+    <div className="max-w-3xl mx-auto space-y-8 mt-6">
+      <div className="space-y-3 text-center">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+          Programmable Tokenized Equities
+        </h1>
+        <p className="text-zinc-400 max-w-xl mx-auto text-sm sm:text-base">
+          Transform natural language into verifiable, executable B20 stock strategies on Base.
+        </p>
       </div>
-      
-      <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
-        Tell StockPilot what your money should do.
-      </h1>
-      
-      <p className="text-zinc-400 text-lg">
-        Turn natural language investment goals into verified, programmable tokenized-stock strategies.
-      </p>
 
-      <form onSubmit={handleSubmit} className="relative mt-8">
+      <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 shadow-2xl backdrop-blur focus-within:border-emerald-500/50 transition-all">
+        <div className="flex items-center justify-between mb-3 text-zinc-400 font-mono text-xs border-b border-zinc-800/80 pb-2">
+          <div className="flex items-center gap-2">
+            <Terminal size={14} className="text-emerald-400" />
+            <span>natural_language_intent.prompt</span>
+          </div>
+          <span className="text-emerald-500/80">LLM Compiler v1.0</span>
+        </div>
+
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="I have $500. Build me an AI portfolio. No company above 20% and keep 10% in USDC..."
-          rows={4}
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none font-mono text-sm shadow-inner"
+          className="w-full bg-transparent text-zinc-100 placeholder-zinc-600 outline-none resize-none h-32 font-sans text-base sm:text-lg leading-relaxed"
+          placeholder="Describe your desired stock portfolio strategy..."
         />
-        <button
-          type="submit"
-          disabled={isLoading || !prompt.trim()}
-          className="absolute bottom-4 right-4 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-zinc-950 font-semibold px-5 py-2.5 rounded-lg transition text-sm"
-        >
-          {isLoading ? 'Compiling Strategy...' : 'Build Strategy →'}
-        </button>
-      </form>
 
-      <div className="flex flex-wrap gap-2 justify-center pt-2">
-        {EXAMPLE_PROMPTS.map((example, i) => (
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-3 border-t border-zinc-800/80">
+          <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            Base Mainnet Verified Assets Only
+          </div>
+
           <button
-            key={i}
-            onClick={() => setPrompt(example)}
-            className="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-400 border border-zinc-800 px-3 py-1.5 rounded-full transition"
+            onClick={() => onCompile(prompt)}
+            disabled={isLoading || !prompt.trim()}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-6 py-2.5 rounded-xl transition disabled:opacity-50 shadow-lg shadow-emerald-500/10 cursor-pointer"
           >
-            "{example}"
+            <Sparkles size={16} />
+            {isLoading ? 'Compiling Engine...' : 'Compile Strategy'}
           </button>
-        ))}
+        </div>
+      </div>
+
+      {/* Preset Suggestions */}
+      <div className="space-y-3">
+        <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider block">Try a preset strategy prompt:</span>
+        <div className="grid gap-2">
+          {SAMPLE_PROMPTS.map((p, idx) => (
+            <button
+              key={idx}
+              onClick={() => setPrompt(p)}
+              className="text-left text-xs sm:text-sm bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/60 hover:border-zinc-700 text-zinc-300 p-3 rounded-xl transition flex items-center justify-between group"
+            >
+              <span>"{p}"</span>
+              <ArrowRight size={14} className="text-zinc-600 group-hover:text-emerald-400 transition-colors" />
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

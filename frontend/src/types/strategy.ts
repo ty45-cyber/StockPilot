@@ -1,26 +1,26 @@
-export interface AssetAllocation {
+export type PipelineStep = 'INPUT' | 'COMPILING' | 'COMPILED' | 'PREVIEW' | 'SUCCESS';
+
+export interface Asset {
   symbol: string;
   name: string;
-  weight: number; // e.g., 0.20 for 20%
-  contractAddress: `0x${string}`;
+  weight: number;
+  contractAddress: string;
   verified: boolean;
 }
 
-export interface StrategyRule {
-  condition_type: 'PRICE_DROP' | 'PERCENT_GAIN' | 'POSITION_ABOVE';
-  target_symbol?: string;
+export interface Rule {
+  condition_type: string;
+  target_symbol: string;
   threshold: number;
-  action_type: 'BUY' | 'SELL' | 'REBALANCE';
-  action_value?: number;
+  action_type: string;
+  action_value: number;
 }
 
 export interface StrategyPolicy {
   name: string;
   capital_usdc: number;
-  assets: AssetAllocation[];
-  reserve: number; // e.g. 0.10 for 10%
+  reserve: number;
   rebalance_days: number;
-  rules: StrategyRule[];
+  assets: Asset[];
+  rules: Rule[];
 }
-
-export type PipelineStep = 'INPUT' | 'COMPILING' | 'COMPILED' | 'PREVIEW' | 'EXECUTING' | 'SUCCESS';

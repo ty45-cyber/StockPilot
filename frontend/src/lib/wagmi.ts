@@ -4,10 +4,8 @@ import { injected } from 'wagmi/connectors';
 
 export const config = createConfig({
   chains: [base],
-  connectors: [
-    injected(),
-  ],
+  connectors: [injected()],
   transports: {
-    [base.id]: http(import.meta.env.VITE_BASE_RPC_URL || 'https://mainnet.base.org'),
+    [base.id]: http(),
   },
 });
